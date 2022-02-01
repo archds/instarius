@@ -44,11 +44,7 @@ LOGGING = {
 
 
 class Settings(BaseSettings):
-    user_list: list[str] = [
-        'polyasilver',
-        'polya_silver',
-        '_alli.on'
-    ]
+    user_list: list[str] = Field(env='USERS')
 
     ig_polling_timeout_sec: int = 1800
     ig_user: str = Field(env='I_USER')
