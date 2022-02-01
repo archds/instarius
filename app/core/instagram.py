@@ -27,7 +27,7 @@ def save_stories(stories: list[Story], username: str) -> list[db.Story]:
     user = db.InstUser.get(db.InstUser.username == username)
 
     story_path = settings.TEMP_DIR / username
-    story_path.mkdir(exist_ok=True)
+    story_path.mkdir(exist_ok=True, parents=True)
 
     db_models = [
         db.Story(

@@ -6,13 +6,13 @@ services:
     environment:
       SQLITE_DATABASE: "db.sqlite"
     volumes:
-      - ./const:/data
+      - db:/data
 
   app:
     build:
       context: .
     volumes:
-      - db:/usr/src/app/const/db.sqlite
+      - db:/usr/src/app/const
     entrypoint: ["python", "app.py"]
     env_file: ./app/.env
 

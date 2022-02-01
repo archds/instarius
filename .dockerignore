@@ -1,0 +1,7 @@
+*
+!app/replies.json
+!app/core
+!app/.env
+!app/app.py
+!app/settings.py
+!requirements.txt

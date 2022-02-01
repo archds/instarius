@@ -6,13 +6,9 @@ from pydantic import BaseSettings, Field
 
 BASE_DIR = Path.cwd()
 TEMP_DIR = BASE_DIR / 'temp'
-CONST_DIR = BASE_DIR / 'const'
 
-for dir in [TEMP_DIR, CONST_DIR]:
-    dir.mkdir(exist_ok=True)
-
-DB_PATH = CONST_DIR / 'db.sqlite'
-REPLIES_PATH = CONST_DIR / 'replies.json'
+DB_PATH = 'db.sqlite'
+REPLIES_PATH = 'replies.json'
 LOG_PATH = BASE_DIR / 'app.log'
 
 LOGGING = {
