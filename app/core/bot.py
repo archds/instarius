@@ -139,6 +139,12 @@ async def all_stories_callback_resolver(call: CallbackQuery):
         await bot.send_message(call.message.chat.id, replies['nostory'])
 
 
+@bot.message_handler(commands=['log'])
+async def log_resolver(message: Message):
+    with open(settings.LOG_PATH, 'rb') as log:
+        await bot.send_document(message.chat.id, log)
+
+
 async def bot_app():
     bot.add_custom_filter(StoryRequestFilter())
     logger.info(f'Start bot polling...')
