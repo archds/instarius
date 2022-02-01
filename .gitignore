@@ -1,0 +1,7 @@
+.env
+db.sqlite
+replies.json
+temp
+Pipfile
+Pipfile.lock
+*.log
