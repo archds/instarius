@@ -17,7 +17,7 @@ from telebot.types import (
 
 import core.model as db
 import settings
-from core.instagram import get_new_stories
+from core.instagram import get_new_stories, get_temp_size
 
 bot = AsyncTeleBot(settings.config.telebot_token)
 logger.setLevel(logging.INFO)
@@ -65,6 +65,14 @@ async def send_stories(chat_id: int, stories: list[db.Story]):
 
     for file in story_files.values():
         file.close()
+
+    await check_temp_size(chat_id)
+
+
+async def check_temp_size(chat_id: int):
+    temp_size = get_temp_size()
+    if temp_size >= settings.config.temp_limit_mb:
+        await bot.send_message(chat_id, f'DEBUG: Temp size limit exceeded, {temp_size} MB used')
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -143,6 +151,11 @@ async def all_stories_callback_resolver(call: CallbackQuery):
 async def log_resolver(message: Message):
     with open(settings.LOG_PATH, 'rb') as log:
         await bot.send_document(message.chat.id, log)
+
+
+@bot.message_handler(commands=['size'])
+async def size_resolver(message: Message):
+    await bot.send_message(message.chat.id, f'Temp files size: {get_temp_size()} MB')
 
 
 async def bot_app():

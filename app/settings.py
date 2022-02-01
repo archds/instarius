@@ -5,11 +5,12 @@ from pathlib import Path
 from pydantic import BaseSettings, Field
 
 BASE_DIR = Path.cwd()
-TEMP_DIR = BASE_DIR / 'temp'
+DATA_DIR = BASE_DIR / 'data'
+TEMP_DIR = DATA_DIR / 'temp'
 
-DB_PATH = 'db.sqlite'
 REPLIES_PATH = 'replies.json'
-LOG_PATH = BASE_DIR / 'app.log'
+DB_PATH = DATA_DIR / 'db.sqlite'
+LOG_PATH = DATA_DIR / 'app.log'
 
 LOGGING = {
     'version': 1,
@@ -45,6 +46,7 @@ LOGGING = {
 class Settings(BaseSettings):
     user_list: list[str] = [
         'polyasilver',
+        'polya_silver',
         '_alli.on'
     ]
 
@@ -53,6 +55,8 @@ class Settings(BaseSettings):
     ig_pass: str = Field(env='I_PASSWORD')
 
     telebot_token: str = Field(env='BOT_TOKEN')
+
+    temp_limit_mb: int = 256  # 256 MB
 
     class Config:
         env_file = '.env'

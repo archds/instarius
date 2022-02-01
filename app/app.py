@@ -27,7 +27,7 @@ async def inst_app():
             )
         )
 
-        await asyncio.sleep(settings.config.BOT_POLLING_TIMEOUT_SEC)
+        await asyncio.sleep(settings.config.ig_polling_timeout_sec)
 
 
 async def app():

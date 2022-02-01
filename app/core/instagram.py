@@ -16,6 +16,10 @@ ig_client.login(
 )
 
 
+def get_temp_size() -> int:
+    return round(sum(f.stat().st_size for f in settings.TEMP_DIR.glob('**/*') if f.is_file()) / 1048576, 2)
+
+
 def get_unseen_stories(stories: list[Story]) -> list[Story]:
     return [
         story for story in stories
