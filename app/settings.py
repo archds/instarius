@@ -44,6 +44,8 @@ LOGGING = {
 
 
 class Settings(BaseSettings):
+    primary_password: str = Field(env='PASSWORD')
+
     user_list: list[str] = Field(env='USERS')
 
     ig_polling_timeout_sec: int = 1800

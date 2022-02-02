@@ -3,8 +3,10 @@ import json
 import logging
 
 from telebot import logger
-from telebot.async_telebot import AsyncTeleBot
-from telebot.asyncio_filters import AdvancedCustomFilter
+from telebot.async_telebot import AsyncTeleBot, CancelUpdate
+from telebot.asyncio_filters import AdvancedCustomFilter, StateFilter
+from telebot.asyncio_handler_backends import BaseMiddleware, State, StatesGroup
+from telebot.asyncio_storage import StateMemoryStorage
 from telebot.callback_data import CallbackData, CallbackDataFilter
 from telebot.types import (
     CallbackQuery,
@@ -19,7 +21,7 @@ import core.model as db
 import settings
 from core.instagram import get_new_stories, get_temp_size
 
-bot = AsyncTeleBot(settings.config.telebot_token)
+bot = AsyncTeleBot(settings.config.telebot_token, state_storage=StateMemoryStorage())
 logger.setLevel(logging.INFO)
 
 try:
@@ -75,30 +77,67 @@ async def check_temp_size(chat_id: int):
         await bot.send_message(chat_id, f'DEBUG: Temp size limit exceeded, {temp_size} MB used')
 
 
-@bot.message_handler(func=lambda m: True)
-async def any_resolver(message: Message):
-    await bot.reply_to(message, replies['/start'])
+class SimpleAuthMiddleware(BaseMiddleware):
+    def __init__(self) -> None:
+        self.update_types = ['message']
+        self.excluded_commands = ['/start', '/help', '/subscribe']
+        # Always specify update types, otherwise middlewares won't work
+
+    async def pre_process(self, message: Message, data):
+        subscribed_users = {bot_user.chat_id for bot_user in db.BotUser.select()}
+        if await bot.get_state(message.from_user.id, message.chat.id) == AuthState.auth_attempt:
+            return
+
+        if message.chat.id not in subscribed_users and message.text not in self.excluded_commands:
+            await bot.send_message(message.chat.id, replies['register'])
+            return CancelUpdate()
+
+    async def post_process(self, message, data, exception):
+        pass
 
 
-@bot.message_handler(commands=['start', 'help'])
+class AuthState(StatesGroup):
+    auth_attempt = State()  # statesgroup should contain states
+
+
+@bot.message_handler(commands=['start'])
+async def help_resolver(message: Message):
+    await bot.send_message(message.chat.id, replies['/start'])
+
+
+@bot.message_handler(commands=['help'])
 async def help_resolver(message: Message):
     await bot.send_message(message.chat.id, replies['/help'])
 
 
 @bot.message_handler(commands=['subscribe'])
 async def register_resolver(message: Message):
-    db.BotUser.get_or_create(chat_id=message.chat.id)
-    await bot.send_message(message.chat.id, replies[message.text])
+    if not db.BotUser.select().where(db.BotUser.chat_id == message.chat.id).exists():
+        await bot.set_state(message.from_user.id, AuthState.auth_attempt, message.chat.id)
+        await bot.send_message(message.chat.id, replies['password'])
+    else:
+        await bot.send_message(message.chat.id, replies['subscribed'])
 
-    await asyncio.gather(
-        *[
-            send_stories(
-                chat_id=message.chat.id,
-                stories=db.Story.select().join(db.InstUser).where(db.InstUser.username == inst_user),
-            )
-            for inst_user in settings.config.user_list
-        ]
-    )
+
+@bot.message_handler(state=AuthState.auth_attempt)
+async def check_password(message: Message):
+    if message.text != settings.config.primary_password:
+        await bot.send_message(message.chat.id, replies['authFailed'])
+    else:
+        db.BotUser.create(chat_id=message.chat.id)
+
+        await bot.delete_message(message.chat.id, message.id)
+        await bot.send_message(message.chat.id, replies['subscribe'])
+        await bot.delete_state(message.from_user.id, message.chat.id)
+        await asyncio.gather(
+            *[
+                send_stories(
+                    chat_id=message.chat.id,
+                    stories=db.Story.select().join(db.InstUser).where(db.InstUser.username == inst_user),
+                )
+                for inst_user in settings.config.user_list
+            ]
+        )
 
 
 @bot.message_handler(commands=['check'])
@@ -165,5 +204,7 @@ async def size_resolver(message: Message):
 
 async def bot_app():
     bot.add_custom_filter(StoryRequestFilter())
+    bot.add_custom_filter(StateFilter(bot))
+    bot.setup_middleware(SimpleAuthMiddleware())
     logger.info(f'Start bot polling...')
-    await bot.polling()
+    await bot.infinity_polling()

@@ -53,7 +53,7 @@ def save_stories(stories: list[Story], username: str) -> list[db.Story]:
 
 
 def get_all_stories(username: str) -> list[Story]:
-    logger.info(f'User stories requests for user - {username}')
+    logger.info(f'User stories request for user - {username}')
     return ig_client.user_stories(int(ig_client.user_id_from_username(username)))
 
 
