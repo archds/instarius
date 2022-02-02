@@ -75,9 +75,14 @@ async def check_temp_size(chat_id: int):
         await bot.send_message(chat_id, f'DEBUG: Temp size limit exceeded, {temp_size} MB used')
 
 
+@bot.message_handler(func=lambda m: True)
+async def any_resolver(message: Message):
+    await bot.reply_to(message, replies['/start'])
+
+
 @bot.message_handler(commands=['start', 'help'])
 async def help_resolver(message: Message):
-    await bot.reply_to(message, 'Hello!')
+    await bot.send_message(message.chat.id, replies['/help'])
 
 
 @bot.message_handler(commands=['subscribe'])
