@@ -24,7 +24,7 @@ class Story(BaseModel):
         ('2', 'Video'),
     ]
 
-    pk = BigIntegerField(unique=True)
+    pk = CharField(unique=True)
     created = DateTimeField()
     user = ForeignKeyField(InstUser)
     s_type = CharField(max_length=3, choices=story_types)
