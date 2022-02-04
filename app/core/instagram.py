@@ -1,10 +1,14 @@
+import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from instagrapi import Client
 from instagrapi.types import Story
 
-import core.model as db
 import settings
+from app import logger
+from core import model as db
+from core.bot import send_stories
 
 logger = logging.getLogger(__name__)
 
@@ -64,3 +68,22 @@ def get_new_stories(username: str) -> list[db.Story]:
     logger.info(f'{len(all_stories)} stories for user {username}; {len(unseen)} new of them')
 
     return save_stories(unseen, username)
+
+
+async def inst_app():
+    logger.info('Start inst polling...')
+    while True:
+        logger.info(f'Check for {settings.config.user_list}')
+
+        with ThreadPoolExecutor(len(settings.config.user_list)) as executor:
+            results = executor.map(get_new_stories, settings.config.user_list)
+
+        await asyncio.gather(
+            *(
+                send_stories(bot_user.chat_id, stories)
+                for stories in results if stories
+                for bot_user in db.BotUser.select()
+            )
+        )
+
+        await asyncio.sleep(settings.config.ig_polling_timeout_sec)
