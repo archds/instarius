@@ -1,6 +1,8 @@
 import asyncio
 import logging
+import os
 from concurrent.futures import ThreadPoolExecutor
+from functools import reduce
 
 from instagrapi import Client
 from instagrapi.types import Story
@@ -74,12 +76,11 @@ async def inst_app():
         with ThreadPoolExecutor(len(settings.config.user_list)) as executor:
             results = executor.map(get_new_stories, settings.config.user_list)
 
-        await asyncio.gather(
-            *(
-                send_stories(bot_user.chat_id, stories)
-                for stories in results if stories
-                for bot_user in models.BotUser.select()
-            )
-        )
+        tasks = [
+            send_stories(bot_user.chat_id, stories)
+            for stories in results if stories
+            for bot_user in models.BotUser.select()
+        ]
 
+        await asyncio.gather(*tasks)
         await asyncio.sleep(settings.config.ig_polling_timeout_sec)
