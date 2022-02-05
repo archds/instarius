@@ -1,15 +1,17 @@
 import json
 
 from telebot import logger
+from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.asyncio_handler_backends import State, StatesGroup
+from telebot.asyncio_storage import StateMemoryStorage
 from telebot.callback_data import CallbackData, CallbackDataFilter
 from telebot.types import CallbackQuery, InputMediaPhoto, InputMediaVideo
 
 import settings
 from core import model as db
-from core.bot import bot
-from core.instagram import get_temp_size
+
+bot = AsyncTeleBot(settings.config.telebot_token, state_storage=StateMemoryStorage())
 
 story_request_factory = CallbackData('user', 'type', prefix='stories')
 new_inst_user_factory = CallbackData('username', prefix='users')
@@ -66,3 +68,7 @@ async def check_temp_size(chat_id: int):
     temp_size = get_temp_size()
     if temp_size >= settings.config.temp_limit_mb:
         await bot.send_message(chat_id, f'DEBUG: Temp size limit exceeded, {temp_size} MB used')
+
+
+def get_temp_size() -> int:
+    return round(sum(f.stat().st_size for f in settings.TEMP_DIR.glob('**/*') if f.is_file()) / 1048576, 2)

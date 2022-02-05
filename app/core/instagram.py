@@ -12,16 +12,7 @@ from core.bot import send_stories
 
 logger = logging.getLogger(__name__)
 
-logger.info('Instagrapi login...')
 ig_client = Client()
-ig_client.login(
-    username=settings.config.ig_user,
-    password=settings.config.ig_pass,
-)
-
-
-def get_temp_size() -> int:
-    return round(sum(f.stat().st_size for f in settings.TEMP_DIR.glob('**/*') if f.is_file()) / 1048576, 2)
 
 
 def get_unseen_stories(stories: list[Story]) -> list[Story]:
@@ -71,6 +62,12 @@ def get_new_stories(username: str) -> list[db.Story]:
 
 
 async def inst_app():
+    logger.info('Instagrapi login...')
+    ig_client.login(
+        username=settings.config.ig_user,
+        password=settings.config.ig_pass,
+    )
+
     logger.info('Start inst polling...')
     while True:
         logger.info(f'Check for {settings.config.user_list}')
