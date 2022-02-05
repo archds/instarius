@@ -1,7 +1,7 @@
 import json
+from datetime import datetime
 
-from telebot.async_telebot import logger
-from telebot.async_telebot import AsyncTeleBot
+from telebot.async_telebot import AsyncTeleBot, logger
 from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.asyncio_handler_backends import State, StatesGroup
 from telebot.asyncio_storage import StateMemoryStorage
@@ -12,6 +12,7 @@ import settings
 from core import models as db
 
 bot = AsyncTeleBot(settings.config.telebot_token, state_storage=StateMemoryStorage())
+start_time = datetime.now()
 
 story_request_factory = CallbackData('user', 'type', prefix='stories')
 new_inst_user_factory = CallbackData('username', prefix='users')

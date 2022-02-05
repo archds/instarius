@@ -1,10 +1,11 @@
 import asyncio
+from datetime import datetime
 
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import settings
 from core import models as models
-from core.bot.interaction import AuthState, get_temp_size, replies, send_stories, story_request_factory, bot
+from core.bot.interaction import AuthState, bot, get_temp_size, replies, send_stories, start_time, story_request_factory
 from core.instagram import get_new_stories
 
 
@@ -84,3 +85,17 @@ async def log_handler(message: Message):
 @bot.message_handler(commands=['size'])
 async def memory_size_handler(message: Message):
     await bot.send_message(message.chat.id, f'Temp files size: {get_temp_size()} MB')
+
+
+@bot.message_handler(commands=['info'])
+async def info_handler(message: Message):
+    uptime = str(datetime.now() - start_time).split('.')[0]
+
+    answer = (
+        'Bot is online 🤖\n'
+        f'Uptime: {uptime}\n'
+        f'Stories sent: {models.Story.select().count()}\n'
+        f'Temp files size: {get_temp_size()} MB'
+    )
+
+    await bot.send_message(message.chat.id, answer)

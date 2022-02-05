@@ -1,8 +1,6 @@
 import asyncio
 import logging
-import os
 from concurrent.futures import ThreadPoolExecutor
-from functools import reduce
 
 from instagrapi import Client
 from instagrapi.types import Story
