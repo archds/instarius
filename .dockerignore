@@ -1,5 +1,5 @@
 *
-!app/replies.json
+!app/static
 !app/core
 !app/.env
 !app/app.py
