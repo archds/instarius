@@ -21,7 +21,7 @@ try:
         commands = json.load(fp)
 except FileNotFoundError as err:
     logger.warn('Bot response file not found, use default')
-    with open(settings.BASE_DIR / 'commands.example.json') as fp:
+    with open(settings.STATIC_DIR / 'commands.example.json') as fp:
         commands = json.load(fp)
 
 

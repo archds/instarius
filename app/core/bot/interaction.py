@@ -22,7 +22,7 @@ try:
         replies = json.load(fp)
 except FileNotFoundError as err:
     logger.warn('Bot response file not found, use default')
-    with open(settings.BASE_DIR / 'replies.example.json') as fp:
+    with open(settings.STATIC_DIR / 'replies.example.json') as fp:
         replies = json.load(fp)
 
 
