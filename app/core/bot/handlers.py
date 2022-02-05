@@ -82,11 +82,6 @@ async def log_handler(message: Message):
         await bot.send_document(message.chat.id, log)
 
 
-@bot.message_handler(commands=['size'])
-async def memory_size_handler(message: Message):
-    await bot.send_message(message.chat.id, f'Temp files size: {get_temp_size()} MB')
-
-
 @bot.message_handler(commands=['info'])
 async def info_handler(message: Message):
     uptime = str(datetime.now() - start_time).split('.')[0]
