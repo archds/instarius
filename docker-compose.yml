@@ -1,12 +1,12 @@
 services:
-  db_admin:
-    image: coleifer/sqlite-web
-    ports:
-      - 8080:8080
-    environment:
-      SQLITE_DATABASE: "db.sqlite"
-    volumes:
-      - ./app/data:/data
+#  db_admin:
+#    image: coleifer/sqlite-web
+#    ports:
+#      - 8080:8080
+#    environment:
+#      SQLITE_DATABASE: "db.sqlite"
+#    volumes:
+#      - ./app/data:/data
 
   app:
     build:
