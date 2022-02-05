@@ -3,7 +3,7 @@ from telebot.asyncio_handler_backends import BaseMiddleware
 from telebot.types import Message
 
 from core import model as db
-from core.bot import AuthState, __init__, replies
+from core.bot.interaction import AuthState, bot, replies
 
 
 class SimpleAuthMiddleware(BaseMiddleware):

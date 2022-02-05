@@ -11,12 +11,12 @@ from core.instagram import get_new_stories, get_temp_size
 
 @bot.message_handler(commands=['start'])
 async def start_handler(message: Message):
-    await bot.send_message(message.chat.id, replies['/start'])
+    await bot.send_message(message.chat.id, replies[message.text])
 
 
 @bot.message_handler(commands=['help'])
 async def help_handler(message: Message):
-    await bot.send_message(message.chat.id, replies['/help'])
+    await bot.send_message(message.chat.id, replies[message.text])
 
 
 @bot.message_handler(commands=['subscribe'])
@@ -67,30 +67,11 @@ async def new_stories_callback_handler(call: CallbackQuery):
     call_data = story_request_factory.parse(call.data)
 
     if stories := get_new_stories(call_data['user']):
-        await send_stories(call.message.id, stories)
-    else:
-        await bot.send_message(call.message.chat.id, replies['nostory'])
-
-
-@bot.message_handler(commands=['all'])
-async def all_handler(message: Message):
-    keyboard = [
-        InlineKeyboardButton(user, callback_data=story_request_factory.new(user=user, type='all'))
-        for user in settings.config.user_list
-    ]
-
-    markup = InlineKeyboardMarkup()
-    markup.add(*keyboard)
-
-    await bot.send_message(message.chat.id, replies[message.text], reply_markup=markup)
-
-
-@bot.callback_query_handler(func=None, config=story_request_factory.filter(type='all'))
-async def all_stories_callback_handler(call: CallbackQuery):
-    call_data = story_request_factory.parse(call.data)
-
-    if stories := models.Story.select().join(models.InstUser).where(models.InstUser.username == call_data['user']):
-        await send_stories(chat_id=call.message.chat.id, stories=stories)
+        tasks = [
+            send_stories(chat_id, stories)
+            for chat_id in [bot_user.chat_id for bot_user in models.BotUser.select()]
+        ]
+        await asyncio.gather(*tasks)
     else:
         await bot.send_message(call.message.chat.id, replies['nostory'])
 
