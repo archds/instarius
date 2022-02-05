@@ -1,12 +1,12 @@
 import asyncio
 from datetime import datetime
 
-from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from telebot.types import Message
 
 import settings
 from core import models as models
-from core.bot.interaction import AuthState, bot, get_temp_size, replies, send_stories, start_time, story_request_factory
-from core.instagram import get_new_stories
+from core.bot.interaction import AuthState, bot, get_temp_size, replies, start_time
+from core.instagram import send_new_stories
 
 
 @bot.message_handler(commands=['start'])
@@ -34,46 +34,17 @@ async def check_password_handler(message: Message):
         await bot.send_message(message.chat.id, replies['authFailed'])
     else:
         models.BotUser.create(chat_id=message.chat.id)
-
-        tasks = [
-            send_stories(
-                chat_id=message.chat.id,
-                stories=models.Story.select().join(models.InstUser).where(models.InstUser.username == inst_user),
-            )
-            for inst_user in settings.config.user_list
-        ]
-
         await bot.delete_message(message.chat.id, message.id)
         await bot.send_message(message.chat.id, replies['subscribe'])
         await bot.delete_state(message.from_user.id, message.chat.id)
-        await asyncio.gather(*tasks)
 
 
 @bot.message_handler(commands=['check'])
 async def check_stories_handler(message: Message):
-    keyboard = [
-        InlineKeyboardButton(user, callback_data=story_request_factory.new(user=user, type='new'))
-        for user in settings.config.user_list
-    ]
-
-    markup = InlineKeyboardMarkup()
-    markup.add(*keyboard)
-
-    await bot.send_message(message.chat.id, replies[message.text], reply_markup=markup)
-
-
-@bot.callback_query_handler(func=None, config=story_request_factory.filter(type='new'))
-async def new_stories_callback_handler(call: CallbackQuery):
-    call_data = story_request_factory.parse(call.data)
-
-    if stories := get_new_stories(call_data['user']):
-        tasks = [
-            send_stories(chat_id, stories)
-            for chat_id in [bot_user.chat_id for bot_user in models.BotUser.select()]
-        ]
+    if tasks := await send_new_stories():
         await asyncio.gather(*tasks)
     else:
-        await bot.send_message(call.message.chat.id, replies['nostory'])
+        await bot.send_message(message.chat.id, replies['nostory'])
 
 
 @bot.message_handler(commands=['log'])
@@ -90,7 +61,8 @@ async def info_handler(message: Message):
         'Bot is online 🤖\n'
         f'Uptime: {uptime}\n'
         f'Stories sent: {models.Story.select().count()}\n'
-        f'Temp files size: {get_temp_size()} MB'
+        f'Temp files size: {get_temp_size()} MB\n'
+        f'Polling every {settings.config.ig_polling_timeout_sec / 60} minutes'
     )
 
     await bot.send_message(message.chat.id, answer)

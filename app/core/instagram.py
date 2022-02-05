@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from concurrent.futures import ThreadPoolExecutor
+from typing import Coroutine
 
 from instagrapi import Client
 from instagrapi.types import Story
@@ -57,7 +58,20 @@ def get_new_stories(username: str) -> list[models.Story]:
 
     logger.info(f'{len(all_stories)} stories for user {username}; {len(unseen)} new of them')
 
-    return save_stories(unseen, username)
+    return save_stories(unseen, username) if unseen else []
+
+
+async def send_new_stories() -> list[Coroutine]:
+    with ThreadPoolExecutor(len(settings.config.user_list)) as executor:
+        results = executor.map(get_new_stories, settings.config.user_list)
+
+    tasks = [
+        send_stories(bot_user.chat_id, stories)
+        for stories in results if stories
+        for bot_user in models.BotUser.select()
+    ]
+
+    return tasks
 
 
 async def inst_app():
@@ -68,17 +82,12 @@ async def inst_app():
     )
 
     logger.info('Start inst polling...')
+
     while True:
+        await asyncio.sleep(10)
         logger.info(f'Check for {settings.config.user_list}')
 
-        with ThreadPoolExecutor(len(settings.config.user_list)) as executor:
-            results = executor.map(get_new_stories, settings.config.user_list)
+        if tasks := await send_new_stories():
+            await asyncio.gather(*tasks)
 
-        tasks = [
-            send_stories(bot_user.chat_id, stories)
-            for stories in results if stories
-            for bot_user in models.BotUser.select()
-        ]
-
-        await asyncio.gather(*tasks)
         await asyncio.sleep(settings.config.ig_polling_timeout_sec)
