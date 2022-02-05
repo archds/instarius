@@ -3,6 +3,8 @@ from logging.config import dictConfig
 from pathlib import Path
 
 from pydantic import BaseSettings, Field
+from telebot import console_output_handler as telebot_handler
+from telebot.async_telebot import logger as telebot_logger
 
 BASE_DIR = Path.cwd()
 DATA_DIR = BASE_DIR / 'data'
@@ -17,7 +19,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '%(asctime)s :: %(module)s :: %(levelname)s :: %(message)s'
+            'format': '%(asctime)s :: %(name)s :: %(levelname)s :: %(message)s'
         },
         'simple': {
             'format': '%(levelname)s :: %(message)s'
@@ -65,5 +67,8 @@ config = Settings()
 dictConfig(LOGGING)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+telebot_logger.removeHandler(telebot_handler)
+telebot_logger.setLevel(logging.INFO)
 
 logging.getLogger('public_request').setLevel(logging.WARNING)

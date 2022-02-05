@@ -6,11 +6,10 @@ from instagrapi import Client
 from instagrapi.types import Story
 
 import settings
-from app import logger
 from core import model as db
 from core.bot import send_stories
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('Instagrapi')
 
 ig_client = Client()
 
@@ -62,7 +61,7 @@ def get_new_stories(username: str) -> list[db.Story]:
 
 
 async def inst_app():
-    logger.info('Instagrapi login...')
+    logger.info('Login...')
     ig_client.login(
         username=settings.config.ig_user,
         password=settings.config.ig_pass,

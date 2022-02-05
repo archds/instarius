@@ -1,6 +1,6 @@
 import json
 
-from telebot import logger
+from telebot.async_telebot import logger
 from telebot.async_telebot import AsyncTeleBot
 from telebot.asyncio_filters import AdvancedCustomFilter
 from telebot.asyncio_handler_backends import State, StatesGroup
@@ -20,8 +20,9 @@ try:
     with open(settings.REPLIES_PATH) as fp:
         replies = json.load(fp)
 except FileNotFoundError as err:
-    logger.error('Bot response file not found')
-    raise err
+    logger.warn('Bot response file not found, use default')
+    with open(settings.BASE_DIR / 'replies.example.json') as fp:
+        replies = json.load(fp)
 
 
 class StoryRequestFilter(AdvancedCustomFilter):
