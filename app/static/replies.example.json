@@ -1,0 +1,11 @@
+{
+  "/check": "Choose user",
+  "/help": "Help text",
+  "/start": "Start",
+  "register": "Auth required",
+  "password": "Password required",
+  "subscribed": "Already subscribed",
+  "authFailed": "Password incorrect",
+  "subscribe": "Subscribe event text",
+  "nostory": "0 new story text"
+}
