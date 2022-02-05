@@ -2,7 +2,7 @@ from telebot.async_telebot import CancelUpdate
 from telebot.asyncio_handler_backends import BaseMiddleware
 from telebot.types import Message
 
-from core import model as db
+from core import models as db
 from core.bot.interaction import AuthState, bot, replies
 
 

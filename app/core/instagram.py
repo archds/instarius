@@ -6,7 +6,7 @@ from instagrapi import Client
 from instagrapi.types import Story
 
 import settings
-from core import model as db
+from core import models
 from core.bot import send_stories
 
 logger = logging.getLogger('Instagrapi')
@@ -17,18 +17,18 @@ ig_client = Client()
 def get_unseen_stories(stories: list[Story]) -> list[Story]:
     return [
         story for story in stories
-        if story.pk not in {db_story.pk for db_story in db.Story.select()}
+        if story.pk not in {db_story.pk for db_story in models.Story.select()}
     ]
 
 
-def save_stories(stories: list[Story], username: str) -> list[db.Story]:
-    user = db.InstUser.get(db.InstUser.username == username)
+def save_stories(stories: list[Story], username: str) -> list[models.Story]:
+    user = models.InstUser.get(models.InstUser.username == username)
 
     story_path = settings.TEMP_DIR / username
     story_path.mkdir(exist_ok=True, parents=True)
 
     db_models = [
-        db.Story(
+        models.Story(
             pk=story.pk,
             created=story.taken_at,
             user=user,
@@ -39,7 +39,7 @@ def save_stories(stories: list[Story], username: str) -> list[db.Story]:
         for story in stories
     ]
 
-    db.Story.bulk_create(db_models)
+    models.Story.bulk_create(db_models)
 
     logger.info(f'Created {len(db_models)} stories in db')
 
@@ -51,7 +51,7 @@ def get_all_stories(username: str) -> list[Story]:
     return ig_client.user_stories(int(ig_client.user_id_from_username(username)))
 
 
-def get_new_stories(username: str) -> list[db.Story]:
+def get_new_stories(username: str) -> list[models.Story]:
     all_stories = get_all_stories(username)
     unseen = get_unseen_stories(all_stories)
 
@@ -78,7 +78,7 @@ async def inst_app():
             *(
                 send_stories(bot_user.chat_id, stories)
                 for stories in results if stories
-                for bot_user in db.BotUser.select()
+                for bot_user in models.BotUser.select()
             )
         )
 

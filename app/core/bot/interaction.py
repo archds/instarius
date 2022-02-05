@@ -9,7 +9,7 @@ from telebot.callback_data import CallbackData, CallbackDataFilter
 from telebot.types import CallbackQuery, InputMediaPhoto, InputMediaVideo
 
 import settings
-from core import model as db
+from core import models as db
 
 bot = AsyncTeleBot(settings.config.telebot_token, state_storage=StateMemoryStorage())
 

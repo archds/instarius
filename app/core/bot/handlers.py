@@ -3,7 +3,7 @@ import asyncio
 from telebot.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import settings
-from core import model as models
+from core import models as models
 from core.bot.interaction import AuthState, get_temp_size, replies, send_stories, story_request_factory, bot
 from core.instagram import get_new_stories
 

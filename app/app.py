@@ -2,7 +2,7 @@ import asyncio
 
 from core.bot import bot_app
 from core.instagram import inst_app
-from core.model import init_db
+from core.models import init_db
 
 
 async def app():
