@@ -84,7 +84,6 @@ async def inst_app():
     logger.info('Start inst polling...')
 
     while True:
-        await asyncio.sleep(10)
         logger.info(f'Check for {settings.config.user_list}')
 
         if tasks := await send_new_stories():
