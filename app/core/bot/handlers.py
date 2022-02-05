@@ -62,7 +62,7 @@ async def info_handler(message: Message):
         f'Uptime: {uptime}\n'
         f'Stories sent: {models.Story.select().count()}\n'
         f'Temp files size: {get_temp_size()} MB\n'
-        f'Polling every {settings.config.ig_polling_timeout_sec / 60} minutes'
+        f'Polling every: {round(settings.config.ig_polling_timeout_sec / 60)} minutes'
     )
 
     await bot.send_message(message.chat.id, answer)
