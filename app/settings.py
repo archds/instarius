@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
     user_list: list[str] = Field(env='USERS')
 
-    ig_polling_timeout_sec: int = 900
+    ig_polling_timeout_sec: int = 1800
     ig_user: str = Field(env='I_USER')
     ig_pass: str = Field(env='I_PASSWORD')
 

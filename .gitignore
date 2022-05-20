@@ -6,3 +6,4 @@ temp
 Pipfile
 Pipfile.lock
 *.log
+venv
