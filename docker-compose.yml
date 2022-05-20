@@ -15,9 +15,4 @@ services:
       - ./app/data:/usr/src/app/data
     entrypoint: [ "python", "app.py" ]
     env_file: ./app/.env
-    deploy:
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 10
-        window: 120s
+    restart: on-failure
