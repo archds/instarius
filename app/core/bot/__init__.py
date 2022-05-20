@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 
 from telebot import logger
 from telebot.asyncio_filters import StateFilter
@@ -44,4 +45,8 @@ async def bot_app():
 
     logger.info(f'Start bot polling...')
 
-    await bot.infinity_polling()
+    try:
+        await bot.infinity_polling()
+    except Exception as e:
+        logger.error(e)
+        time.sleep(15)
